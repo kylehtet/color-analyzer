@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 1.1em;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            background: #f8f9ff;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input[type="file"]:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select:hover {
+            border-color: #667eea;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #results {
+            display: none;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #eee;
+        }
+
+        .result-section {
+            margin-bottom: 35px;
+        }
+
+        .result-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+        }
+
+        .result-section h2::before {
+            content: "✨";
+            margin-right: 10px;
+        }
+
+        .undertone {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            font-size: 1.3em;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .color-chip {
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: transform 0.2s;
+        }
+
+        .color-chip:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .color-hex {
+            font-family: monospace;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .outfit-list {
+            list-style: none;
+        }
+
+        .outfit-item {
+            background: #f8f9ff;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.2s;
+        }
+
+        .outfit-item:hover {
+            background: #f0f2ff;
+            transform: translateX(5px);
+        }
+
+        .outfit-item::before {
+            content: "👔";
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .color-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Color Analyzer</h1>
+        <p class="subtitle">Discover your perfect colors based on your skin tone</p>
+
+        <form id="analyzerForm" enctype="multipart/form-data">
+            <div class="upload-section">
+                <div class="form-group">
+                    <label for="selfie">Upload Your Selfie</label>
+                    <input type="file" id="selfie" name="image" accept="image/*" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="style">Style Preference</label>
+                    <select id="style" name="style" required>
+                        <option value="subtle">Subtle</option>
+                        <option value="bold">Bold</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="formality">Formality Level</label>
+                    <select id="formality" name="formality" required>
+                        <option value="casual">Casual</option>
+                        <option value="professional">Professional</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit">Analyze My Colors</button>
+        </form>
+
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing your colors...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div id="results">
+            <div class="result-section">
+                <h2>Your Undertone</h2>
+                <div class="undertone" id="undertone"></div>
+            </div>
+
+            <div class="result-section">
+                <h2>Your Perfect Colors</h2>
+                <div class="color-grid" id="colorGrid"></div>
+            </div>
+
+            <div class="result-section">
+                <h2>Outfit Suggestions</h2>
+                <ul class="outfit-list" id="outfitList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('analyzerForm');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const errorDiv = document.getElementById('error');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Hide previous results and errors
+            results.style.display = 'none';
+            errorDiv.style.display = 'none';
+            loading.style.display = 'block';
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                loading.style.display = 'none';
+
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    showError(data.error || 'An error occurred during analysis');
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                showError('Failed to connect to the server. Please try again.');
+            }
+        });
+
+        function displayResults(data) {
+            // Display undertone
+            const undertoneEl = document.getElementById('undertone');
+            undertoneEl.textContent = data.undertone.toUpperCase();
+
+            // Display colors
+            const colorGrid = document.getElementById('colorGrid');
+            colorGrid.innerHTML = '';
+            data.colors.forEach(color => {
+                const chip = document.createElement('div');
+                chip.className = 'color-chip';
+                chip.innerHTML = `
+                    <div class="color-swatch" style="background-color: ${color.hex}"></div>
+                    <div class="color-name">${color.name}</div>
+                    <div class="color-hex">${color.hex}</div>
+                `;
+                colorGrid.appendChild(chip);
+            });
+
+            // Display outfits
+            const outfitList = document.getElementById('outfitList');
+            outfitList.innerHTML = '';
+            data.outfits.forEach(outfit => {
+                const li = document.createElement('li');
+                li.className = 'outfit-item';
+                li.textContent = outfit;
+                outfitList.appendChild(li);
+            });
+
+            // Show results
+            results.style.display = 'block';
+            results.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
