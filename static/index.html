@@ -123,8 +123,12 @@
             transform: translateY(0);
         }
 
+        :root {
+            --disabled-bg: #cccccc;
+        }
+
         button:disabled {
-            background: #ccc;
+            background: var(--disabled-bg);
             cursor: not-allowed;
             transform: none;
         }

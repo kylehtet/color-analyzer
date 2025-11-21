@@ -1,7 +1,7 @@
 """
 FastAPI backend for Color Analyzer
 """
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -12,9 +12,10 @@ from color_analyzer import analyze_color
 app = FastAPI(title="Color Analyzer API")
 
 # Enable CORS for frontend
+# Note: In production, replace ["*"] with specific allowed origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Configure with specific domains in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,10 +53,10 @@ async def analyze(
     """
     # Validate inputs
     if style not in ["subtle", "bold"]:
-        return {"error": "Style must be 'subtle' or 'bold'"}
+        raise HTTPException(status_code=400, detail="Style must be 'subtle' or 'bold'")
     
     if formality not in ["casual", "professional"]:
-        return {"error": "Formality must be 'casual' or 'professional'"}
+        raise HTTPException(status_code=400, detail="Formality must be 'casual' or 'professional'")
     
     # Save uploaded file temporarily
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
@@ -73,11 +74,10 @@ async def analyze(
             "colors": result["colors"],
             "outfits": result["outfits"]
         }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        raise HTTPException(status_code=500, detail=f"An error occurred during analysis: {str(e)}")
     finally:
         # Clean up temporary file
         if os.path.exists(temp_path):

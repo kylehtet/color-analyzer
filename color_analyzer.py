@@ -46,6 +46,11 @@ def analyze_color(
     }
 
 
+# Undertone detection thresholds
+WARM_THRESHOLD = 10  # Red must exceed blue by this amount for warm undertone
+COOL_THRESHOLD = 5   # Blue must exceed red by this amount for cool undertone
+
+
 def detect_undertone(img_rgb: np.ndarray) -> str:
     """
     Detect skin undertone from RGB image.
@@ -74,10 +79,10 @@ def detect_undertone(img_rgb: np.ndarray) -> str:
     # Determine undertone based on color balance
     # Warm tones have more red/yellow (higher R, lower B)
     # Cool tones have more blue/pink (higher B, G)
-    if avg_r > avg_b + 10:
+    if avg_r > avg_b + WARM_THRESHOLD:
         if avg_r > avg_g:
             return "warm"
-    elif avg_b > avg_r + 5:
+    elif avg_b > avg_r + COOL_THRESHOLD:
         return "cool"
     
     return "neutral"
